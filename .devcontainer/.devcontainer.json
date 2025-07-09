@@ -11,7 +11,7 @@
       ]
     }
   },
-  "workspaceFolder": "/workspace",
-  "postCreateCommand": "./gradlew clean build",
-  "overrideCommand": false
+  "workspaceFolder": "/workspace"
+//   "postCreateCommand": "./gradlew clean build",
+//   "overrideCommand": false
 }
