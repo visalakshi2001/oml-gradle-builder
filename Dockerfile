@@ -2,7 +2,8 @@
 FROM python:3.11-slim
 
 # ‑‑ install JDK 11 for Gradle builds
-RUN apt-get update && \
+RUN add-apt-repository ppa:openjdk-r/ppa && \
+    apt-get update && \
     apt-get install -y openjdk-11-jdk && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
