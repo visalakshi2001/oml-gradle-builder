@@ -19,9 +19,17 @@ RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
 # ---- Copy project code & Gradle wrapper --------------------------------------
 COPY . .
 
+# Provide executable permissions to the Gradle wrapper script gradlew and gradlew.bat
+# (if it exists) so that it can be executed in the container
+# This is necessary for the Gradle wrapper to work correctly in the container environment
+RUN chmod +x gradlew.bat || true
+# The || true part ensures that if gradlew.bat does not exist, the command does not fail
+RUN chmod +x gradlew
+
+
 # ‑‑ EXPOSE is only documentation; Render injects $PORT1 AND $PORT2
-EXPOSE 8000
 ENV PORT=8000
+EXPOSE 8000
 
 # Start FastAPI on the port Render provides
 RUN echo "$PORT"
