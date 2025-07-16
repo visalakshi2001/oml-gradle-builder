@@ -24,5 +24,5 @@ EXPOSE 8000
 ENV PORT=8000
 
 # Start FastAPI on the port Render provides
-RUN "echo $PORT"
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+RUN echo "$PORT"
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "$PORT"]
