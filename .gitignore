@@ -5,3 +5,4 @@ serverapi/
 __pycache__/
 **/__pycache__
 .devcontainer/
+Dockerfile_old

@@ -1,36 +1,58 @@
-# Dockerfile
-FROM maven:3.9.10-eclipse-temurin-21 AS runtime
-#   • JDK 21.0.7 LTS & Maven 3.9.10 are already present
-#     (see official tags list)  :contentReference[oaicite:2]{index=2}
+# syntax=docker/dockerfile:1
+###############################################################################
+#  Stage 1 – base image with Java 21, Python 3, and Maven 3.9.10
+###############################################################################
+FROM eclipse-temurin:21-jdk-jammy AS base
 
-# ---- Install Python 3 + pip ---------------------------------------------------
-RUN apt-get update -qq && \
-    apt-get install -y --no-install-recommends python3 python3-pip && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-# Debian‑Slim packages are tiny yet compatible with Alpine‑size images  :contentReference[oaicite:3]{index=3}
+# --- OS packages (git is handy for Gradle plugins that use it) ---------------
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        python3 python3-pip git curl ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
-# ---- Create working dir ------------------------------------------------------
+# --- Maven 3.9.10 ------------------------------------------------------------
+ARG MAVEN_VERSION=3.9.10
+RUN curl -fsSL https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
+      | tar -xz -C /opt && \
+    ln -s /opt/apache-maven-${MAVEN_VERSION}/bin/mvn /usr/local/bin/mvn
+
 WORKDIR /app
 
-# ---- Python dependencies -----------------------------------------------------
-COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
+###############################################################################
+#  Stage 2 – install Python deps only once for better layer caching
+###############################################################################
+FROM base AS python-deps
 
-# ---- Copy project code & Gradle wrapper --------------------------------------
+# If you keep a requirements.txt, copy it; otherwise install directly.
+# COPY requirements.txt .
+# RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir fastapi uvicorn[standard] python-multipart --break-system-packages
+
+###############################################################################
+#  Stage 3 – application: copy source and prep Gradle wrapper
+###############################################################################
+FROM base AS app-src
+
+WORKDIR /app
+COPY --from=python-deps /usr/local/lib/python3.*/site-packages /usr/local/lib/python3.*/site-packages
 COPY . .
 
-# Provide executable permissions to the Gradle wrapper script gradlew and gradlew.bat
-# (if it exists) so that it can be executed in the container
-# This is necessary for the Gradle wrapper to work correctly in the container environment
-RUN chmod +x gradlew.bat || true
-# The || true part ensures that if gradlew.bat does not exist, the command does not fail
-RUN chmod +x gradlew
+# Ensure the Gradle wrapper is executable for Linux
+RUN chmod +x ./gradlew
 
+###############################################################################
+#  Stage 4 – runtime: smallest possible final image ---------------------------
+FROM eclipse-temurin:21-jdk-jammy AS runtime
 
-# ‑‑ EXPOSE is only documentation; Render injects $PORT1 AND $PORT2
-ENV PORT=8000
+WORKDIR /app
+
+# Copy everything from the previous layer
+COPY --from=app-src /app /app
+COPY --from=python-deps /usr/local/lib/python3.*/site-packages /usr/local/lib/python3.*/site-packages
+
+# Default port for FastAPI; free tiers override $PORT
 EXPOSE 8000
 
-# Start FastAPI on the port Render provides
-RUN echo "$PORT"
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# When hosts set $PORT we respect it, otherwise fall back to 8000.
+# Two workers handle concurrent /buildomlfile uploads without huge RAM use.
+CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2"]

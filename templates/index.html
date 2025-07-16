@@ -1,0 +1,13 @@
+<html>
+  <head>
+    <title>Directory listing for server-root/{{cur_dir}}</title>
+  </head>
+  <body>
+    <h1>Directory listing for server-root/{{cur_dir}}</h1>
+    <ul>
+      {% for i,file in enumerate(files) %}
+      <li><a href="{{files_paths[i]}}">{{file}}</a></li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>
