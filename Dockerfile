@@ -12,7 +12,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
-# ‑‑ EXPOSE is only documentation; Render injects $PORT
+# ‑‑ EXPOSE is only documentation; Render injects $PORT1 AND $PORT2
 EXPOSE 8000 8080
 ENV PORT1=8000
 ENV PORT2=8080
