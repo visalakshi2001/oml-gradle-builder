@@ -4,4 +4,4 @@ build/
 serverapi/
 __pycache__/
 **/__pycache__
-.devcontainer
+.devcontainer/
