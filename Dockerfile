@@ -13,8 +13,8 @@ RUN apt-get update -qq && \
 WORKDIR /app
 
 # ---- Python dependencies -----------------------------------------------------
-COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
+COPY requirements.txt /app/requirements.txt
+RUN pip3 install --no-cache-dir -r /app/requirements.txt --break-system-packages
 
 # ---- Copy project code & Gradle wrapper --------------------------------------
 COPY . /app
