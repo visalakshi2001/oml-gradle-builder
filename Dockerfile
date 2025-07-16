@@ -1,5 +1,5 @@
 # Dockerfile
-FROM maven:3.9.10-eclipse-temurin-21-slim AS runtime
+FROM maven:3.9.10-eclipse-temurin-21 AS runtime
 #   • JDK 21.0.7 LTS & Maven 3.9.10 are already present
 #     (see official tags list)  :contentReference[oaicite:2]{index=2}
 
