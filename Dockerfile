@@ -1,13 +1,21 @@
-# # Dockerfile
-# FROM openjdk:11-jdk-slim
-# WORKDIR /workspace
+# Dockerfile
+FROM python:3.11-slim
 
-# # Copy Gradle wrapper and build files
-# COPY gradlew gradlew.bat build.gradle settings.gradle ./
-# COPY gradle ./gradle
+# ‑‑ install JDK 11 for Gradle builds
+RUN apt-get update && \
+    apt-get install -y openjdk-11-jdk && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# # Ensure the wrapper is executable
-# RUN chmod +x gradlew
+# ‑‑ copy source
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
 
-# # Default command (overridden by overrideCommand:false)
-# CMD [ "bash" ]
+# ‑‑ EXPOSE is only documentation; Render injects $PORT
+EXPOSE 8000 8080
+ENV PORT1=8000
+ENV PORT2=8080
+
+# Start FastAPI on the port Render provides
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "$PORT1", "&", "python", "-m", "http.server", "$PORT2", "--directory", "./"]

@@ -1,4 +1,9 @@
 .git
 build
+__pycache__/
+serverapi
 **/.git
 **/build
+**/__pycache__
+*.pytest_cache
+.gradle
