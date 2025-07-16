@@ -26,7 +26,7 @@ FROM base AS python-deps
 # If you keep a requirements.txt, copy it; otherwise install directly.
 # COPY requirements.txt .
 # RUN pip install --no-cache-dir -r requirements.txt
-RUN pip3 install --no-cache-dir fastapi uvicorn[standard] python-multipart
+RUN pip3 install --no-cache-dir fastapi uvicorn[standard] python-multipart jinja2 aiofiles
 
 ###############################################################################
 #  Stage 3 – application: copy source and prep Gradle wrapper
@@ -55,4 +55,5 @@ EXPOSE 8000
 
 # When hosts set $PORT we respect it, otherwise fall back to 8000.
 # Two workers handle concurrent /buildomlfile uploads without huge RAM use.
-CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2"]
+# CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
