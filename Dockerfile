@@ -13,16 +13,18 @@ RUN apt-get update -qq && \
 WORKDIR /app
 
 # ---- Python dependencies -----------------------------------------------------
-COPY requirements.txt /app/requirements.txt
-RUN pip3 install --no-cache-dir -r /app/requirements.txt --break-system-packages
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
 
 # ---- Copy project code & Gradle wrapper --------------------------------------
-COPY . /app
+COPY . .
 
 # ‑‑ EXPOSE is only documentation; Render injects $PORT1 AND $PORT2
-EXPOSE 8000
-ENV PORT=8000
+EXPOSE 8000 8080
+ENV PORT1=8000
+ENV PORT2=8080
 
 # Start FastAPI on the port Render provides
-RUN echo "$PORT"
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port $PORT"]
+RUN echo "$PORT1"
+RUN echo "$PORT2"
+CMD ["uvicorn", "/app/app:app", "--host", "0.0.0.0", "--port", "8000", "&&", "python", "-m", "http.server", "8080", "--directory" "./"]
