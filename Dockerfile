@@ -7,6 +7,9 @@ RUN apt-get update
 RUN apt-get install -y openjdk-11-jdk
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+ENV PATH=$PATH:$JAVA_HOME/bin
+
 # ‑‑ copy source
 WORKDIR /app
 COPY requirements.txt .
