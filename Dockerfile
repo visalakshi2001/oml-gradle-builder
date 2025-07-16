@@ -1,19 +1,22 @@
 # Dockerfile
-FROM python:3.11-slim
+FROM maven:3.9.10-eclipse-temurin-21-slim AS runtime
+#   • JDK 21.0.7 LTS & Maven 3.9.10 are already present
+#     (see official tags list)  :contentReference[oaicite:2]{index=2}
 
-# ‑‑ install JDK 11 for Gradle builds
-RUN add-apt-repository ppa:openjdk-r/ppa
-RUN apt-get update
-RUN apt-get install -y openjdk-11-jdk
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# ---- Install Python 3 + pip ---------------------------------------------------
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends python3 python3-pip && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+# Debian‑Slim packages are tiny yet compatible with Alpine‑size images  :contentReference[oaicite:3]{index=3}
 
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
-ENV PATH=$PATH:$JAVA_HOME/bin
-
-# ‑‑ copy source
+# ---- Create working dir ------------------------------------------------------
 WORKDIR /app
+
+# ---- Python dependencies -----------------------------------------------------
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# ---- Copy project code & Gradle wrapper --------------------------------------
 COPY . .
 
 # ‑‑ EXPOSE is only documentation; Render injects $PORT1 AND $PORT2
