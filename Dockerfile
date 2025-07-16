@@ -50,7 +50,7 @@ WORKDIR /app
 # Copy everything from the previous layer
 COPY --from=app-src /app /app
 COPY --from=python-deps /usr/local/lib/python3.*/site-packages /usr/local/lib/python3.*/site-packages
-RUN pip3 list
+RUN pip list
 
 # Default port for FastAPI; free tiers override $PORT
 EXPOSE 8000
