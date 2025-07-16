@@ -20,11 +20,9 @@ RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
 COPY . .
 
 # ‑‑ EXPOSE is only documentation; Render injects $PORT1 AND $PORT2
-EXPOSE 8000 8080
-ENV PORT1=8000
-ENV PORT2=8080
+EXPOSE 8000
+ENV PORT=8000
 
 # Start FastAPI on the port Render provides
-RUN echo "$PORT1"
-RUN echo "$PORT2"
-CMD ["uvicorn", "/app/app:app", "--host", "0.0.0.0", "--port", "8000", "&&", "python", "-m", "http.server", "8080", "--directory" "./"]
+RUN echo "$PORT"
+CMD ["uvicorn", "/app/app:app", "--host", "0.0.0.0", "--port", "8000"]
