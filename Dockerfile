@@ -25,4 +25,4 @@ ENV PORT1=8000
 ENV PORT2=8080
 
 # Start FastAPI on the port Render provides
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "$PORT1", "--reload"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "${PORT1}", "--reload"]
