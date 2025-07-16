@@ -2,10 +2,10 @@
 FROM python:3.11-slim
 
 # ‑‑ install JDK 11 for Gradle builds
-RUN add-apt-repository ppa:openjdk-r/ppa && \
-    apt-get update && \
-    apt-get install -y openjdk-11-jdk && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN add-apt-repository ppa:openjdk-r/ppa
+RUN apt-get update
+RUN apt-get install -y openjdk-11-jdk
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ‑‑ copy source
 WORKDIR /app
