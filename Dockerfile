@@ -25,7 +25,8 @@ FROM base AS python-deps
 
 # If you keep a requirements.txt, copy it; otherwise install directly.
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
+RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 list
 # RUN pip3 install --no-cache-dir fastapi uvicorn[standard] python-multipart jinja2 aiofiles
 
 ###############################################################################
