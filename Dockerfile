@@ -17,7 +17,7 @@ COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
 
 # ---- Copy project code & Gradle wrapper --------------------------------------
-COPY . .
+COPY . /app
 
 # ‑‑ EXPOSE is only documentation; Render injects $PORT1 AND $PORT2
 EXPOSE 8000
