@@ -7,3 +7,6 @@ __pycache__/
 .devcontainer/
 Dockerfile_old
 Dockerfile_new
+/.gradle/
+.fuseki/
+.gradle/

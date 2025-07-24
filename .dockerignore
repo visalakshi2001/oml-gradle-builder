@@ -10,3 +10,5 @@ serverapi
 .devcontainer/
 Dockerfile_old
 Dockerfile_new
+.fuseki/
+.gradle/

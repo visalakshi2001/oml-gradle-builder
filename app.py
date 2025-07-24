@@ -1,5 +1,6 @@
 import os
 import shutil
+import re
 import subprocess
 from pathlib import Path
 from fastapi import FastAPI, UploadFile, HTTPException, Request
@@ -12,9 +13,10 @@ app = FastAPI()
 
 # Path to your project root (adjust if app.py lives elsewhere)
 PROJECT_ROOT = Path(__file__).parent.resolve()
-BUNDLE_PATH = PROJECT_ROOT / "src" / "oml" / "example.com" / "project" / "bundle.oml"
+BUNDLE_PATH = PROJECT_ROOT / "src" / "oml" / "example.com" / "project" / "uaomlfile.oml"
 BUILD_DIR   = PROJECT_ROOT / "build"
 LOG_DIR     = BUILD_DIR / "logs"
+BROADCAST_DIR = BUILD_DIR
 
 
 @app.get("/")
@@ -34,8 +36,13 @@ async def build(bundle: UploadFile, request: Request):
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     
     # 3. Save uploaded bundle.oml (overwrite any existing)
-    with BUNDLE_PATH.open("wb") as f_out:
+    with BUNDLE_PATH.open("w", encoding='utf-8') as f_out:
         contents = await bundle.read()
+        # find the iri on first line of the file between '<http://(...)>' and replace with example.com/project/uaomlfile.oml
+        contents = contents.decode('utf-8')
+        # print(contents[:150])
+        # print(re.sub(r'<http://.*?>', '<http://example.com/project/uaomlfile#>', contents, count=1)[:150])
+        contents = re.sub(r'<http://.*?>', '<http://example.com/project/uaomlfile#>', contents, count=1)
         f_out.write(contents)
     
     # 4. Run Gradle build
@@ -68,12 +75,12 @@ async def build(bundle: UploadFile, request: Request):
     #    We’ll serve BUILD_DIR on port 8080 (see next steps),
     #    so we just point clients there under /browse/
     
-    browse_url = str(request.base_url) + "browse"
+    browse_url = request.base_url._url + "browse"
 
     # 7. Return JSON with status, code, and browse URL
     return JSONResponse({
         "exit_code": proc.returncode,
-        "log_path": str(log_file.relative_to(PROJECT_ROOT)),
+        "log_path": str(log_file.relative_to(BROADCAST_DIR)),
         "browse_url": browse_url
     })
 
@@ -85,14 +92,21 @@ templates = Jinja2Templates(directory=PROJECT_ROOT / "templates")
 @app.get("/browse", response_class=HTMLResponse)
 def browse(request: Request):
     request_url = request.url._url
+
     if request_url.endswith("/"):
         request_url = request_url[:-1]
+    
+    fullpath = BROADCAST_DIR
+    if not fullpath.exists():
+        raise HTTPException(status_code=404, detail="Build directory does not exist")
 
-    files = os.listdir("./")
-    files = [f'{f}/' if os.path.isdir(f) else f for f in files]
+    files = os.listdir(fullpath)
+    print(files)
+    print([os.path.isdir(fullpath / f) for f in files])
+    files = [f'{f}/' if os.path.isdir(fullpath / f) else f for f in files]
     files_paths = [f'{request_url}/{f}' for f in files]
     return templates.TemplateResponse(
-        "index.html", {"request": request, "cur_dir": "", "files_paths": files_paths, "files": files, "enumerate": enumerate}
+        "index.html", {"request": request, "cur_dir": "build", "files_paths": files_paths, "files": files, "enumerate": enumerate}
     )
 
 # Also handle all the subdirectories under /browse using path parameters
@@ -101,6 +115,7 @@ def browse_subpath(request: Request, subpath: str):
     request_url = request.url._url
     print("Request URL:", request_url)
     
+    # remove trailing slash if it exists
     if request_url.endswith("/"):
         print("Yes")
         request_url = request_url[:-1]
@@ -109,7 +124,7 @@ def browse_subpath(request: Request, subpath: str):
         print("No")
         
 
-    full_path = PROJECT_ROOT / subpath
+    full_path = BROADCAST_DIR / subpath
     if not full_path.exists():
         raise HTTPException(status_code=404, detail="Path not found")
         
